@@ -1,10 +1,10 @@
-module github.com/grafana/xk6-sql-driver-ramsql
+module github.com/iambaim/xk6-sql-driver-db2
 
-go 1.24
+go 1.24.0
 
 require (
 	github.com/grafana/xk6-sql v1.0.5
-	github.com/proullon/ramsql v0.1.4
+	github.com/ibmdb/go_ibm_db v0.5.4
 )
 
 require (
@@ -20,7 +20,7 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/grafana/sobek v0.0.0-20250320150027-203dc85b6d98 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.26.1 // indirect
-	github.com/jackc/puddle/v2 v2.2.2 // indirect
+	github.com/ibmruntimes/go-recordio/v2 v2.0.0-20240416213906-ae0ad556db70 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/mailru/easyjson v0.9.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
@@ -31,7 +31,7 @@ require (
 	github.com/serenize/snaker v0.0.0-20201027110005-a7ad2135616e // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
-	github.com/stretchr/testify v1.10.0 // indirect
+	github.com/stretchr/testify v1.11.0 // indirect
 	go.k6.io/k6 v1.0.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
 	go.opentelemetry.io/otel v1.35.0 // indirect
@@ -42,10 +42,11 @@ require (
 	go.opentelemetry.io/otel/sdk v1.35.0 // indirect
 	go.opentelemetry.io/otel/trace v1.35.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.5.0 // indirect
-	golang.org/x/exp v0.0.0-20230713183714-613f0c0eb8a1 // indirect
-	golang.org/x/net v0.39.0 // indirect
-	golang.org/x/sys v0.32.0 // indirect
-	golang.org/x/text v0.24.0 // indirect
+	golang.org/x/crypto v0.43.0 // indirect
+	golang.org/x/net v0.45.0 // indirect
+	golang.org/x/sys v0.37.0 // indirect
+	golang.org/x/term v0.36.0 // indirect
+	golang.org/x/text v0.30.0 // indirect
 	golang.org/x/time v0.11.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250218202821-56aae31c358a // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250218202821-56aae31c358a // indirect

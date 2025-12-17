@@ -1,22 +1,42 @@
 const db = sql.open(driver, connection);
 
-db.exec("CREATE TABLE IF NOT EXISTS test_table (id integer PRIMARY KEY AUTOINCREMENT, name VARCHAR NOT NULL, value VARCHAR);");
+let exist = db.query(
+  "SELECT 1 FROM SYSCAT.TABLES WHERE TABSCHEMA='DB2INST1' AND TABNAME='TEST';",
+);
+
+if (exist.length != 0) {
+  db.exec("drop table TEST;");
+}
+
+db.exec(
+  "create table TEST(ID varchar(20),NAME varchar(20),LOCATION varchar(20),POSITION varchar(20));",
+);
 
 for (let i = 0; i < 5; i++) {
-  db.exec("INSERT INTO test_table (name, value) VALUES ('name-" + i + "', 'value-" + i + "');");
+  db.exec(
+    "INSERT INTO TEST (NAME, LOCATION, POSITION) VALUES ('name-" +
+      i +
+      "', 'location-" +
+      i +
+      "', 'position-" +
+      i +
+      "');",
+  );
 }
 
-let all_rows = db.query("SELECT * FROM test_table;");
+let all_rows = db.query("SELECT * FROM TEST;");
 if (all_rows.length != 5) {
-  throw new Error("Expected all five rows to be returned; got " + all_rows.length);
+  throw new Error(
+    "Expected all five rows to be returned; got " + all_rows.length,
+  );
 }
 
-let one_row = db.query("SELECT * FROM test_table WHERE name = $1;", "name-2");
+let one_row = db.query("SELECT * FROM TEST WHERE NAME = 'name-1';");
 if (one_row.length != 1) {
   throw new Error("Expected single row to be returned; got " + one_row.length);
 }
 
-let no_rows = db.query("SELECT * FROM test_table WHERE name = $1;", "bogus-name");
+let no_rows = db.query("SELECT * FROM TEST WHERE NAME = 'bogus-name';");
 if (no_rows.length != 0) {
   throw new Error("Expected no rows to be returned; got " + no_rows.length);
 }
