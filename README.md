@@ -55,6 +55,31 @@ export default function () {
 }
 ```
 
+## Building
+
+The included `Makefile` is the preferred way to build this extension. Just execute `make k6`.
+
+### Manual building step
+
+1. Download and extract DB2 CLI driver (available here: https://public.dhe.ibm.com/ibmdl/export/pub/software/data/db2/drivers/odbc_cli).
+2. Install `xk6`:
+    ```
+    go install go.k6.io/xk6@latest
+    ```
+3. Set the environment variable, for example in Linux:
+    ```
+    export IBM_DB_HOME=<IBM DB2 CLI driver extracted path>
+    export CGO_CFLAGS=-I${IBM_DB_HOME}/include
+    export CGO_LDFLAGS=-L${IBM_DB_HOME}/lib
+    export LD_LIBRARY_PATH=${IBM_DB_HOME}/lib
+    export XK6_RACE_DETECTOR=1
+    export CGO_ENABLED=1
+    ```
+4. Build this extension (we need encoding for query result texts):
+    ```
+    xk6 build --with github.com/grafana/xk6-sql@latest --with github.com/oleiade/xk6-encoding@latest --with github.com/iambaim/xk6-sql-driver-db2=.
+    ```
+
 ## Usage
 
 Check the [xk6-sql documentation](https://github.com/grafana/xk6-sql) on how to use this database driver.
