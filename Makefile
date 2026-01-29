@@ -54,7 +54,7 @@ setup-db2:
 	go run ./helpers/db2_cli_setup.go
 
 k6: xk6${ext} setup-db2 *.go go.mod go.sum
-	ls ./helpers
+	find ./helpers
 	xk6${ext} build -v --with github.com/grafana/xk6-sql@latest --with github.com/oleiade/xk6-encoding@latest --with github.com/iambaim/xk6-sql-driver-db2=.
 
 example: k6 setup-container
