@@ -14,7 +14,7 @@ jobs:
   build-with-xk6:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout code
@@ -31,11 +31,15 @@ jobs:
         with:
           xk6-version: "1.3.1"
 
+      - name: Install Make
+        if: runner.os == 'Windows'
+        run: choco install make -y
+
       - name: Build
         run: make build
         shell: bash
       
       - name: Test
-        if: matrix.os == 'ubuntu-latest'
+        if: runner.os == 'Linux'
         run: make container-test
         shell: bash
