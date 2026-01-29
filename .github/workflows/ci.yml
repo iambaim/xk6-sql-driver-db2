@@ -26,6 +26,11 @@ jobs:
         with:
           go-version: 1.25.x
           cache: false
+      - name: Set up MinGW
+        if: runner.os == 'Windows'
+        uses: egor-tensin/setup-mingw@v3
+        with:
+          platform: x64
       - name: Setup xk6
         uses: grafana/setup-xk6@97b842b765bd3fea56db7195e98c5f61cab8fe46 # v1.1.1
         with:
