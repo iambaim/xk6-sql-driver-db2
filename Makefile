@@ -36,7 +36,7 @@ endef
 all: test build example
 
 xk6${ext}:
-	xk6${ext} -V
+	xk6${ext} -V || (echo "Please install xk6 or make sure it is available in your PATH"; exit 1)
 
 test: setup-db2 *.go testdata/*.js
 	go test -count 1 ./...
@@ -51,9 +51,7 @@ setup-container:
 	$(call check_timeout, until docker exec db2test su - -c "db2 connect to SAMPLE" db2inst1)
 
 setup-db2:
-	curl -L https://raw.githubusercontent.com/ibmdb/go_ibm_db/refs/heads/master/installer/setup.go -o setup.go
-	-go run setup.go
-	rm -f setup.go
+	go run ./helpers/db2_cli_setup.go
 
 k6: xk6${ext} setup-db2 *.go go.mod go.sum
 	xk6${ext} build -v --with github.com/grafana/xk6-sql@latest --with github.com/oleiade/xk6-encoding@latest --with github.com/iambaim/xk6-sql-driver-db2=.
