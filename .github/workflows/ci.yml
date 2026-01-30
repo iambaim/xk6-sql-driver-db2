@@ -14,7 +14,7 @@ jobs:
   build-with-xk6:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout code
@@ -27,14 +27,19 @@ jobs:
           go-version: 1.25.x
           cache: false
       - name: Setup xk6
+        if: runner.os == 'Windows'
         uses: grafana/setup-xk6@97b842b765bd3fea56db7195e98c5f61cab8fe46 # v1.1.1
         with:
           xk6-version: "1.3.1"
-
+          dir: "/mingw64/bin"
+      - name: Setup xk6
+        if: runner.os != 'Windows'
+        uses: grafana/setup-xk6@97b842b765bd3fea56db7195e98c5f61cab8fe46 # v1.1.1
+        with:
+          xk6-version: "1.3.1"
       - name: Build
         run: make build
         shell: bash
-      
       - name: Test
         if: runner.os == 'Linux'
         run: make container-test
