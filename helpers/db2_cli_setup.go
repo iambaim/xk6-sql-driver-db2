@@ -1,5 +1,6 @@
 //go:build exclude
-// Adapted from https://github.com/ibmdb/go_ibm_db/blob/master/installer/setup.go
+// Adapted from https://github.com/ibmdb/go_ibm_db/blob/v0.5.4/installer/setup.go.
+// See LICENSES/go_ibm_db-BSD-3-Clause.txt for the upstream copyright and license.
 
 package main
 
