@@ -10,7 +10,7 @@ ifeq ($(detected_OS),Windows)
     include make.win.env
 	export $(shell sed 's/=.*//' make.win.env)
 	docker_opts := --platform="linux/amd64" --privileged=true
-	k6_env = env PATH="$(IBM_DB_HOME)/bin:$$PATH"
+	k6_env = env PATH="$$(cygpath -u "$(IBM_DB_HOME)/bin"):$$PATH"
 endif
 ifeq ($(detected_OS),Darwin)
 	include make.osx.env
@@ -62,7 +62,7 @@ setup-db2:
 	go run ./helpers/db2_cli_setup.go
 
 k6${ext}: xk6${ext} setup-db2 *.go go.mod go.sum
-	xk6${ext} build -v --k6-version $(K6_VERSION) \
+	xk6${ext} build -v --output k6${ext} --k6-version $(K6_VERSION) \
 		--with github.com/grafana/xk6-sql@$(XK6_SQL_VERSION) \
 		--with github.com/oleiade/xk6-encoding@$(XK6_ENCODING_VERSION) \
 		--with github.com/iambaim/xk6-sql-driver-db2=.
