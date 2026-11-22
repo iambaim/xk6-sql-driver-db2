@@ -58,6 +58,8 @@ This extension targets k6 v2. The build uses k6 v2.4.0 and xk6-sql v1.2.4. Scrip
 
 Install Go 1.26 or later and xk6 v1.5.1. On Linux and macOS, you'll also need a C compiler for CGO. On Windows, run `make` from Git Bash; the driver loads the DB2 DLL at runtime without CGO.
 
+On Linux, the IBM DB2 CLI driver needs `libxml2.so.2`. On Ubuntu 24.04, install it with `sudo apt-get install libxml2`.
+
 Run `make build` to download the DB2 CLI driver and build k6. Run `make smoke-test` to check that k6 loads both SQL modules without connecting to DB2.
 
 To run the integration test against a local DB2 container, run `make container-test` with Docker running and port 50000 free.

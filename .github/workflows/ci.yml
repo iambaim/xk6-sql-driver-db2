@@ -15,7 +15,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        # IBM's Linux CLI driver requires libxml2.so.2, available on Ubuntu 24.04.
+        os: [ubuntu-24.04, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout code
@@ -38,6 +39,12 @@ jobs:
         uses: grafana/setup-xk6@97b842b765bd3fea56db7195e98c5f61cab8fe46 # v1.1.1
         with:
           xk6-version: "1.5.1"
+      - name: Install DB2 runtime libraries
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxml2
+        shell: bash
       - name: Install DB2 CLI driver
         id: db2
         run: make setup-db2 2>&1 | tee db2.log
@@ -50,12 +57,18 @@ jobs:
         id: smoke
         run: make check-module-loading 2>&1 | tee smoke.log
         shell: bash
-      - name: Report build failure
+      - name: Test against DB2
+        if: runner.os == 'Linux'
+        id: integration
+        run: make container-test 2>&1 | tee integration.log
+        shell: bash
+      - name: Report CI failure
         if: failure()
         env:
           DB2_OUTCOME: ${{ steps.db2.outcome }}
           BUILD_OUTCOME: ${{ steps.build.outcome }}
           SMOKE_OUTCOME: ${{ steps.smoke.outcome }}
+          INTEGRATION_OUTCOME: ${{ steps.integration.outcome }}
         run: |
           if [[ "$DB2_OUTCOME" == failure ]]; then
             log=db2.log
@@ -63,6 +76,8 @@ jobs:
             log=build.log
           elif [[ "$SMOKE_OUTCOME" == failure ]]; then
             log=smoke.log
+          elif [[ "$INTEGRATION_OUTCOME" == failure ]]; then
+            log=integration.log
           else
             exit 0
           fi
@@ -71,8 +86,4 @@ jobs:
           detail=${detail//$'\r'/'%0D'}
           detail=${detail//$'\n'/'%0A'}
           printf '::error title=CI failure in %s::%s\n' "$log" "$detail"
-        shell: bash
-      - name: Test
-        if: runner.os == 'Linux'
-        run: make container-test
         shell: bash

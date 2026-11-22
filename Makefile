@@ -6,10 +6,14 @@ else
 	ext :=
 endif
 
+xk6_cmd = xk6${ext}
+
 ifeq ($(detected_OS),Windows)
     include make.win.env
 	export $(shell sed 's/=.*//' make.win.env)
 	docker_opts := --platform="linux/amd64" --privileged=true
+	# Resolve xk6 through Git Bash; CreateProcess cannot search its POSIX PATH.
+	xk6_cmd = "$$(command -v xk6${ext})"
 	k6_env = env PATH="$$(cygpath -u "$(IBM_DB_HOME)/bin"):$$PATH"
 endif
 ifeq ($(detected_OS),Darwin)
@@ -44,7 +48,7 @@ endef
 all: test build example
 
 xk6${ext}:
-	xk6${ext} -V || (echo "Please install xk6 or make sure it is available in your PATH"; exit 1)
+	$(xk6_cmd) -V || (echo "Please install xk6 or make sure it is available in your PATH"; exit 1)
 
 test: setup-db2 *.go testdata/*.js
 	go test $(test_flags) -count 1 ./...
@@ -62,7 +66,7 @@ setup-db2:
 	go run ./helpers/db2_cli_setup.go
 
 k6${ext}: xk6${ext} setup-db2 *.go go.mod go.sum
-	xk6${ext} build -v --output k6${ext} --k6-version $(K6_VERSION) \
+	$(xk6_cmd) build -v --output k6${ext} --k6-version $(K6_VERSION) \
 		--with github.com/grafana/xk6-sql@$(XK6_SQL_VERSION) \
 		--with github.com/oleiade/xk6-encoding@$(XK6_ENCODING_VERSION) \
 		--with github.com/iambaim/xk6-sql-driver-db2=.
