@@ -1,4 +1,5 @@
 k6
+k6.exe
 helpers/clidriver
 helpers/*.tar.gz
 helpers/*.zip
