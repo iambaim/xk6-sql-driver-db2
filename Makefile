@@ -73,6 +73,9 @@ k6: k6.exe
 endif
 
 smoke-test: k6${ext}
+	$(MAKE) check-module-loading
+
+check-module-loading:
 	K6_AUTO_EXTENSION_RESOLUTION=false $(k6_env) ./k6${ext} inspect examples/example.js
 
 example: k6${ext} setup-container
@@ -81,4 +84,4 @@ example: k6${ext} setup-container
 clean:
 	rm -f k6${ext}
 
-.PHONY: test all build container-test smoke-test example setup-db2 setup-container clean
+.PHONY: test all build container-test smoke-test check-module-loading example setup-db2 setup-container clean

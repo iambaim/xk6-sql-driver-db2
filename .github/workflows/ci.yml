@@ -38,8 +38,39 @@ jobs:
         uses: grafana/setup-xk6@97b842b765bd3fea56db7195e98c5f61cab8fe46 # v1.1.1
         with:
           xk6-version: "1.5.1"
-      - name: Build and check k6 module loading
-        run: make smoke-test
+      - name: Install DB2 CLI driver
+        id: db2
+        run: make setup-db2 2>&1 | tee db2.log
+        shell: bash
+      - name: Build k6
+        id: build
+        run: make -o setup-db2 build 2>&1 | tee build.log
+        shell: bash
+      - name: Check k6 module loading
+        id: smoke
+        run: make check-module-loading 2>&1 | tee smoke.log
+        shell: bash
+      - name: Report build failure
+        if: failure()
+        env:
+          DB2_OUTCOME: ${{ steps.db2.outcome }}
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+          SMOKE_OUTCOME: ${{ steps.smoke.outcome }}
+        run: |
+          if [[ "$DB2_OUTCOME" == failure ]]; then
+            log=db2.log
+          elif [[ "$BUILD_OUTCOME" == failure ]]; then
+            log=build.log
+          elif [[ "$SMOKE_OUTCOME" == failure ]]; then
+            log=smoke.log
+          else
+            exit 0
+          fi
+          detail=$(tail -n 20 "$log")
+          detail=${detail//'%'/'%25'}
+          detail=${detail//$'\r'/'%0D'}
+          detail=${detail//$'\n'/'%0A'}
+          printf '::error title=CI failure in %s::%s\n' "$log" "$detail"
         shell: bash
       - name: Test
         if: runner.os == 'Linux'
