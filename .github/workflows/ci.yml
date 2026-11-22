@@ -1,10 +1,15 @@
 name: CI
 
 on:
+  workflow_call:
+    inputs:
+      ref:
+        description: Git ref or commit to test
+        required: true
+        type: string
   workflow_dispatch:
   push:
     branches: ["main"]
-    tags: ["v*"]
   pull_request:
     branches: ["main"]
 
@@ -12,6 +17,8 @@ permissions: {}
 
 jobs:
   build-with-xk6:
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -23,6 +30,7 @@ jobs:
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           persist-credentials: false
+          ref: ${{ inputs.ref }}
       - name: Setup Go
         uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6
         with:
