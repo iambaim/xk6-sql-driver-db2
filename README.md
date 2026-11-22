@@ -91,3 +91,9 @@ To run the integration test against a local DB2 container, run `make container-t
 ## Usage
 
 Check the [xk6-sql documentation](https://github.com/grafana/xk6-sql) on how to use this database driver.
+
+## Publishing a release
+
+Push a stable version tag (`vX.Y.Z`) from `main` to trigger the [Release workflow](https://github.com/iambaim/xk6-sql-driver-db2/actions/workflows/release.yml). It tests the tagged commit on Windows, macOS, and Ubuntu before publishing a GitHub Release with generated notes and source archives. The release does not include prebuilt binaries or IBM's DB2 CLI driver.
+
+To publish a tag that already exists, such as `v0.2.0`, run the **Release** workflow from `main` and enter the tag. There's no need to move or recreate it.

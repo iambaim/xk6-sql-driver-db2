@@ -1,0 +1,97 @@
+name: Release
+
+on:
+  push:
+    tags: ['v[0-9]+.[0-9]+.[0-9]+']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing version tag (for example, v0.2.0)
+        required: true
+        type: string
+
+permissions: {}
+
+concurrency:
+  group: release-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  resolve-tag:
+    if: github.event_name != 'push' || !github.event.deleted
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+      commit: ${{ steps.tag.outputs.commit }}
+      tag_object: ${{ steps.tag.outputs.tag_object }}
+    steps:
+      - name: Fetch main and tags
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify release tag
+        id: tag
+        shell: bash
+        env:
+          TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == workflow_dispatch && "$GITHUB_REF" != refs/heads/main ]]; then
+            echo 'Run manual releases from main.' >&2
+            exit 1
+          fi
+          if [[ ! "$TAG" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo 'The tag must be a stable version such as v0.2.0.' >&2
+            exit 1
+          fi
+          tag_object=$(git rev-parse --verify "refs/tags/$TAG")
+          commit=$(git rev-parse --verify "$tag_object^{commit}")
+          if [[ "$GITHUB_EVENT_NAME" == push && "$commit" != "$(git rev-parse "$GITHUB_SHA^{commit}")" ]]; then
+            echo 'The tag no longer points to the commit that triggered this run.' >&2
+            exit 1
+          fi
+          if ! git merge-base --is-ancestor "$commit" HEAD; then
+            echo 'The tagged commit must be on main.' >&2
+            exit 1
+          fi
+          printf 'tag=%s\ncommit=%s\ntag_object=%s\n' "$TAG" "$commit" "$tag_object" >> "$GITHUB_OUTPUT"
+
+  test:
+    needs: resolve-tag
+    permissions:
+      contents: read
+    uses: ./.github/workflows/ci.yml
+    with:
+      ref: ${{ needs.resolve-tag.outputs.commit }}
+
+  publish:
+    needs: [resolve-tag, test]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Publish GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ needs.resolve-tag.outputs.tag }}
+          TAG_OBJECT: ${{ needs.resolve-tag.outputs.tag_object }}
+        run: |
+          current_tag=$(gh api "repos/$GH_REPO/git/ref/tags/$TAG" --jq '.object.sha')
+          if [[ "$current_tag" != "$TAG_OBJECT" ]]; then
+            echo 'The tag changed after validation; refusing to publish.' >&2
+            exit 1
+          fi
+          if release=$(gh release view "$TAG" --json isDraft,url --jq 'if .isDraft then "draft" else .url end'); then
+            if [[ "$release" == draft ]]; then
+              echo 'A draft already exists; review and publish it from GitHub.' >&2
+              exit 1
+            fi
+            printf 'Release already exists: %s\n' "$release"
+            exit 0
+          fi
+          gh release create "$TAG" --verify-tag --generate-notes
