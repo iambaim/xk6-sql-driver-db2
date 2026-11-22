@@ -54,14 +54,22 @@ export default function () {
 
 ## Building
 
-The included `Makefile` is the preferred way to build this extension. Just execute `make k6`.
+This extension targets k6 v2. The build uses k6 v2.4.0 and xk6-sql v1.2.4. Scripts still import `k6/x/sql` and `k6/x/sql/driver/db2`.
 
-### Manual building step
+Install Go 1.26 or later and xk6 v1.5.1. On Linux and macOS, you'll also need a C compiler for CGO. On Windows, run `make` from Git Bash; the driver loads the DB2 DLL at runtime without CGO.
+
+On Linux, the IBM DB2 CLI driver needs `libxml2.so.2`. On Ubuntu 24.04, install it with `sudo apt-get install libxml2`.
+
+Run `make build` to download the DB2 CLI driver and build k6. Run `make smoke-test` to check that k6 loads both SQL modules without connecting to DB2.
+
+To run the integration test against a local DB2 container, run `make container-test` with Docker running and port 50000 free.
+
+### Manual build
 
 1. Download and extract DB2 CLI driver (available here: https://public.dhe.ibm.com/ibmdl/export/pub/software/data/db2/drivers/odbc_cli).
 2. Install `xk6`:
     ```
-    go install go.k6.io/xk6@latest
+    go install go.k6.io/xk6@v1.5.1
     ```
 3. Set the environment variable, for example in Linux:
     ```
@@ -74,7 +82,10 @@ The included `Makefile` is the preferred way to build this extension. Just execu
     ```
 4. Build this extension:
     ```
-    xk6 build --with github.com/grafana/xk6-sql@latest --with github.com/iambaim/xk6-sql-driver-db2=.
+    xk6 build --k6-version v2.4.0 \
+      --with github.com/grafana/xk6-sql@v1.2.4 \
+      --with github.com/oleiade/xk6-encoding@v0.0.0-20260702145940-258b2345beb3 \
+      --with github.com/iambaim/xk6-sql-driver-db2=.
     ```
 
 ## Usage

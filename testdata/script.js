@@ -35,6 +35,11 @@ let one_row = db.query("SELECT * FROM TEST WHERE NAME = 'name-1';");
 if (one_row.length != 1) {
   throw new Error("Expected single row to be returned; got " + one_row.length);
 }
+if (one_row[0].NAME !== "name-1") {
+  throw new Error(
+    "Expected NAME to be the string 'name-1'; got " + one_row[0].NAME,
+  );
+}
 
 let no_rows = db.query("SELECT * FROM TEST WHERE NAME = 'bogus-name';");
 if (no_rows.length != 0) {
